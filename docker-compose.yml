@@ -1,0 +1,28 @@
+version: '3.6'
+services:
+
+  rabbitmq:
+    image: "rabbitmq:3.7-alpine"
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  worker:
+    build:
+      context: ./
+      dockerfile: prepare/Dockerfile
+    restart: always
+    environment:
+      RABBIT_HOST: rabbitmq
+      VIDEO_QUEUE_NAME: localhost-video-queue
+      PYTHONUNBUFFERED: 1
+      HONEYCOMB_CLIENT_ID: VG66qOsNr4OzQbtOTeIepbm73P3JEXhb
+      HONEYCOMB_CLIENT_SECRET: Rm0IFp65rsjKKBXiyQ2GZIfXHe5Y4P368iTDJlvVsBkQoowhS8UElcl96xry1suZ
+      AWS_ACCESS_KEY_ID: AKIAJYRH66BCTXE3F7UA
+      AWS_SECRET_ACCESS_KEY: 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
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data
+
