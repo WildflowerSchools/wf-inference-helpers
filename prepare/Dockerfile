@@ -4,7 +4,9 @@ RUN mkdir /app
 
 WORKDIR /app
 
-RUN pip install retry pika click wildflower-honeycomb-sdk boto3
+RUN apk add ffmpeg
+
+RUN pip install retry pika click wildflower-honeycomb-sdk boto3 ffmpeg-python
 
 COPY ./watership /app/watership
 

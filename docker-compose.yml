@@ -13,6 +13,8 @@ services:
       context: ./
       dockerfile: prepare/Dockerfile
     restart: always
+    env_file:
+      - secret-vars.env
     environment:
       RABBIT_HOST: rabbitmq
       VIDEO_QUEUE_NAME: localhost-video-queue

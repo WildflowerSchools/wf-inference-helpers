@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import sys
 from traceback import print_exc
@@ -94,5 +95,33 @@ def queue_posetracking(ctx, data_id, device_id, timestamp, path, dataset, rabbit
     close(channel)
 
 
+@main.command()
+@click.pass_context
+@click.option('--environment_name', help='name of environment in honeycomb', required=True)
+@click.option('--start', help='id of device in honeycomb', required=True)
+@click.option('--end', help='starting timestamp of the video', required=True)
+@click.option('--rabbitmq', help='hostname for rabbitmq', required=False)
+@click.option('--queue', help='queue for rabbitmq', required=False)
+def queue_prepare_day(ctx, environment_name, start, end, rabbitmq=None, queue=None):
+    host = rabbitmq if rabbitmq is not None else RABBIT_HOST
+    que = queue if queue is not None else POSE_QUEUE_NAME
+    print(f"attempting to connect to {host}")
+    channel = connect_to_rabbit(host, que)
+    message = {
+        "job": "prepare-range",
+        "environment_name": environment_name,
+        "start": start,
+        "end": end,
+    }
+    send_message(channel, que, json.dumps(message))
+    close(channel)
+
+
 if __name__ == '__main__':
+    logger = logging.getLogger()
+
+    logger.setLevel(os.getenv("LOG_LEVEL", logging.INFO))
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s - %(message)s'))
+    logger.addHandler(handler)
     main()
