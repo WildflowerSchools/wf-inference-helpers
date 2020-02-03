@@ -1,0 +1,4 @@
+data/
+.git
+secret-vars.env
+__pycache__
