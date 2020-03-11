@@ -104,7 +104,7 @@ def queue_posetracking(ctx, data_id, device_id, timestamp, path, dataset, rabbit
 @click.option('--queue', help='queue for rabbitmq', required=False)
 def queue_prepare_day(ctx, environment_name, start, end, rabbitmq=None, queue=None):
     host = rabbitmq if rabbitmq is not None else RABBIT_HOST
-    que = queue if queue is not None else POSE_QUEUE_NAME
+    que = queue if queue is not None else VIDEO_QUEUE_NAME
     print(f"attempting to connect to {host}")
     channel = connect_to_rabbit(host, que)
     message = {

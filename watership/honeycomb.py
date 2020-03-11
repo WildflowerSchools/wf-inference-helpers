@@ -83,6 +83,7 @@ def get_assignments(environment_id, honeycomb_client=None):
               assigned_type
               assigned {
                 ... on Device {
+                    device_id
                     device_type
                 }
               }
@@ -93,7 +94,7 @@ def get_assignments(environment_id, honeycomb_client=None):
         {"environment_id": environment_id})
     if hasattr(result, "get"):
         assignments = result.get("getEnvironment").get("assignments")
-        return [assignment["assignment_id"] for assignment in assignments if assignment["assigned_type"] == "DEVICE" and assignment["assigned"]["device_type"].find("CAMERA") > 0]
+        return [(assignment["assignment_id"], assignment["assigned"]["device_id"]) for assignment in assignments if assignment["assigned_type"] == "DEVICE" and assignment["assigned"]["device_type"].find("CAMERA") > 0]
     else:
         logging.debug(result)
         return []

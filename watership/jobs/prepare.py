@@ -9,6 +9,7 @@ from watership.fiver import send_message
 from watership.honeycomb import load_file_from_s3, get_assignments, get_datapoint_keys_for_assignment_in_range, get_environment_id
 
 
+POSE_QUEUE_NAME = os.getenv("POSE_QUEUE_NAME", "localhost-pose-queue")
 DATA_PROCESS_DIRECTORY = os.getenv("DATA_PROCESS_DIRECTORY", "/data/process-temp/")
 
 
@@ -17,7 +18,7 @@ def prepare_range(ch, que, msg):
     if name:
         environment_id = get_environment_id(name)
         assignments = get_assignments(environment_id)
-        for assignment in assignments:
+        for assignment, device_id in assignments:
             message = {
                 "job": "prepare-range-assignment",
                 "environment_name": name,
@@ -25,6 +26,7 @@ def prepare_range(ch, que, msg):
                 "start": msg.get("start"),
                 "end": msg.get("end"),
                 "assignment_id": assignment,
+                "device_id": device_id,
             }
             send_message(ch, que, json.dumps(message))
 
@@ -63,6 +65,15 @@ def prepare_range_assignment(ch, que, msg):
                     fp.write("\'\n")
                 fp.flush()
             concat_videos(files_path, output_path)
+            message = {
+                "data_id": data_id,
+                "device_id": msg.get("device_id"),
+                "timestamp": sorted(paths, key=lambda d: d.get("timestamp"))[0].get("timestamp"),
+                "path": output_path,
+                "duration": (len(datapoints) * 10),
+                "dataset": "alpha",
+            }
+            send_message(ch, POSE_QUEUE_NAME, json.dumps(message))
 
 
 def concat_videos(input_path, output_path):
