@@ -46,7 +46,7 @@ def video_preloader(data_id, output):
         load_file_from_s3(key, bucket, output)
         logging.info("file done, sending next task")
     else:
-        logging.info(f"datapoint {data_id} is invaid in some way, cannot read")
+        logging.info(f"datapoint {data_id} is invalid in some way, cannot read")
     return details
 
 

@@ -3,6 +3,7 @@ import os
 
 import boto3
 import honeycomb
+from gqlpycgen.utils import now
 
 
 HONEYCOMB_URI = os.getenv("HONEYCOMB_URI", "https://honeycomb.api.wildflower-tech.org/graphql")
@@ -138,3 +139,23 @@ def get_datapoint_keys_for_assignment_in_range(assignment_id, start, end, honeyc
             break
         for item in data:
             yield item
+
+
+def create_inference_execution(assignment_id, start, end, sources, model="alphapose", version="v1", honeycomb_client=None):
+    if honeycomb_client is None:
+        honeycomb_client = get_client()
+    query_pages = """
+        mutation createInferenceExecution($inferenceExecution: InferenceExecutionInput) {
+          createInferenceExecution(inferenceExecution: $inferenceExecution) { inference_id }
+        }
+        """
+    variables = {
+        "name": f"{assignment_id}::{start}-->>{end}",
+        "notes": f"created by inference_helper in prepare job",
+        "model": model
+        "version": version,
+        "data_sources": sources,
+        "execution_start": now(),
+    }
+    result = honeycomb_client.raw_query(query_pages, variables)
+    return result.get("createInferenceExecution").get("inference_id")

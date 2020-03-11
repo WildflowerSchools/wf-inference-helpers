@@ -6,7 +6,7 @@ import os
 import ffmpeg
 
 from watership.fiver import send_message
-from watership.honeycomb import load_file_from_s3, get_assignments, get_datapoint_keys_for_assignment_in_range, get_environment_id
+from watership.honeycomb import load_file_from_s3, get_assignments, get_datapoint_keys_for_assignment_in_range, get_environment_id, create_inference_execution
 
 
 POSE_QUEUE_NAME = os.getenv("POSE_QUEUE_NAME", "localhost-pose-queue")
@@ -45,8 +45,10 @@ def prepare_range_assignment(ch, que, msg):
         datapoints = list(get_datapoint_keys_for_assignment_in_range(assignment_id, start, end))
         if len(datapoints):
             paths = []
+            sources = []
             for datum in datapoints:
                 data_id = datum.get("data_id")
+                sources.append(data_id)
                 name = f"{data_id}.mp4"
                 timestamp = datum.get("timestamp")
                 output = os.path.join(ppath, name)
@@ -64,6 +66,7 @@ def prepare_range_assignment(ch, que, msg):
                     fp.write(obj['name'])
                     fp.write("\'\n")
                 fp.flush()
+            inference_id = create_inference_execution(assignment_id, start, end, sources)
             concat_videos(files_path, output_path)
             message = {
                 "data_id": data_id,
@@ -71,6 +74,7 @@ def prepare_range_assignment(ch, que, msg):
                 "timestamp": sorted(paths, key=lambda d: d.get("timestamp"))[0].get("timestamp"),
                 "path": output_path,
                 "duration": (len(datapoints) * 10),
+                "inference_execution_id": inference_id,
                 "dataset": "alpha",
             }
             send_message(ch, POSE_QUEUE_NAME, json.dumps(message))
