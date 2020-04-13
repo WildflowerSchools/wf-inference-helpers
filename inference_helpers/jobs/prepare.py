@@ -77,10 +77,17 @@ def prepare_range_assignment(ch, que, msg):
             send_message(ch, POSE_QUEUE_NAME, json.dumps(message))
 
 
-def concat_videos(input_path, output_path):
+def concat_videos(input_path, output_path, stream_specifier=None, video_sync=None):
+    # Default vsync: -1, auto which chooses between 1 and 2 depending on muxer capabilities
     # TODO handle timescale issues due to missing chunks or replaced chunks
+    output_options = {"c": "copy"}
+    if stream_specifier:
+        output_options['r'] = stream_specifier
+    if video_sync:
+        output_options['vsync'] = video_sync
+
     if not os.path.exists(output_path):
         files = ffmpeg.input(input_path, format='concat', safe=0)
-        files.output(output_path, c="copy").run()
+        files.output(output_path, **output_options).run()
     else:
         logging.info("concatenated video already exists")
