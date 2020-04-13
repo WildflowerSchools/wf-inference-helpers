@@ -2,9 +2,9 @@ import logging
 import os
 import json
 
-from watership.fiver import connect_to_rabbit, close, send_message
-from watership.honeycomb import get_video_details, load_file_from_s3, get_assignments, get_datapoint_keys_for_assignment_in_range
-from watership.jobs.prepare import prepare_range, prepare_range_assignment
+from inference_helpers.rabbitmq import connect_to_rabbit, close, send_message
+from inference_helpers.honeycomb import get_video_details, load_file_from_s3, get_assignments, get_datapoint_keys_for_assignment_in_range
+from inference_helpers.jobs.prepare import prepare_range, prepare_range_assignment
 
 __all__ = ["start_consuming"]
 
@@ -29,12 +29,19 @@ def job_processor(ch, method, properties, body):
                 "dataset": "FUTURE",
             }
             send_message(ch, POSE_QUEUE_NAME, json.dumps(message))
+        ch.basic_ack(delivery_tag=method.delivery_tag)
     if job == "prepare-range":
         prepare_range(ch, method.routing_key, msg)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
     if job == "prepare-range-assignment":
-        prepare_range_assignment(ch, method.routing_key, msg)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+        try:
+            prepare_range_assignment(ch, method.routing_key, msg)
+        except Exception as e:
+            logging.error("error in processing a range assignment")
+            logging.error(e)
+            logging.error(body)
 
-    ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
 def video_preloader(data_id, output):

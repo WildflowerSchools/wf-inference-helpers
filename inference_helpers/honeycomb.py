@@ -150,12 +150,14 @@ def create_inference_execution(assignment_id, start, end, sources, model="alphap
         }
         """
     variables = {
-        "name": f"{assignment_id}::{start}-->>{end}",
-        "notes": f"created by inference_helper in prepare job",
-        "model": model
-        "version": version,
-        "data_sources": sources,
-        "execution_start": now(),
+        "inferenceExecution": {
+            "name": f"{assignment_id}::{start}-->>{end}",
+            "notes": f"created by inference_helper in prepare job",
+            "model": model,
+            "version": version,
+            "data_sources": sources,
+            "execution_start": now(),
+        }
     }
     result = honeycomb_client.raw_query(query_pages, variables)
     return result.get("createInferenceExecution").get("inference_id")

@@ -5,30 +5,27 @@ import os
 
 import ffmpeg
 
-from watership.fiver import send_message
-from watership.honeycomb import load_file_from_s3, get_assignments, get_datapoint_keys_for_assignment_in_range, get_environment_id, create_inference_execution
+from inference_helpers.honeycomb import load_file_from_s3, get_assignments, get_datapoint_keys_for_assignment_in_range, get_environment_id, create_inference_execution
 
 
-POSE_QUEUE_NAME = os.getenv("POSE_QUEUE_NAME", "localhost-pose-queue")
-DATA_PROCESS_DIRECTORY = os.getenv("DATA_PROCESS_DIRECTORY", "/data/process-temp/")
 
-
-def prepare_range(ch, que, msg):
-    name = msg.get("environment_name")
-    if name:
-        environment_id = get_environment_id(name)
+def prepare_range(environment_name, start, end):
+    results = []
+    if environment_name:
+        environment_id = get_environment_id(environment_name)
         assignments = get_assignments(environment_id)
         for assignment, device_id in assignments:
             message = {
                 "job": "prepare-range-assignment",
-                "environment_name": name,
+                "environment_name": environment_name,
                 "environment_id": environment_id,
-                "start": msg.get("start"),
-                "end": msg.get("end"),
+                "start": start,
+                "end": end,
                 "assignment_id": assignment,
                 "device_id": device_id,
             }
-            send_message(ch, que, json.dumps(message))
+            results.append(message)
+    return results
 
 
 def prepare_range_assignment(ch, que, msg):

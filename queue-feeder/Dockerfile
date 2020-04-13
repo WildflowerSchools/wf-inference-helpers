@@ -8,6 +8,6 @@ RUN apk add ffmpeg
 
 RUN pip install retry pika click wildflower-honeycomb-sdk boto3 ffmpeg-python
 
-COPY ./watership /app/watership
+COPY ./inference_helpers /app/inference_helpers
 
-ENTRYPOINT ["python", "-m", "watership", "queue-prepare-day"]
+ENTRYPOINT ["python", "-m", "inference_helpers", "queue-prepare-day"]

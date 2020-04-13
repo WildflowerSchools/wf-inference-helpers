@@ -8,6 +8,6 @@ RUN apk add ffmpeg
 
 RUN pip install retry pika click wildflower-honeycomb-sdk boto3 ffmpeg-python
 
-COPY ./watership /app/watership
+COPY ./inference_helpers /app/inference_helpers
 
-CMD ["python", "-m", "watership", "consume-video"]
+CMD ["python", "-m", "inference_helpers", "consume-video"]
