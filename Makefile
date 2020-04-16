@@ -8,5 +8,5 @@ build:
 # 	docker build --no-cache -t wildflowerschools/wf-deep-docker:video-prepare-v$(VERSION) -f prepare/Dockerfile .
 # 	docker push wildflowerschools/wf-deep-docker:video-queue-feeder-v$(VERSION)
 # 	docker push wildflowerschools/wf-deep-docker:video-prepare-v$(VERSION)
-	docker build --no-cache -t wildflowerschools/wf-deep-docker:video-prepare-tooling-v$(VERSION) -f airflow/Dockerfile .
+	docker build -t wildflowerschools/wf-deep-docker:video-prepare-tooling-v$(VERSION) -f airflow/Dockerfile .
 	docker push wildflowerschools/wf-deep-docker:video-prepare-tooling-v$(VERSION)

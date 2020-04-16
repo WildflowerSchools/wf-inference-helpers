@@ -3,7 +3,7 @@ import os
 
 import boto3
 import honeycomb
-from gqlpycgen.utils import now
+from gqlpycgen.utils import now, json_dumps
 
 
 HONEYCOMB_URI = os.getenv("HONEYCOMB_URI", "https://honeycomb.api.wildflower-tech.org/graphql")
@@ -131,7 +131,9 @@ def get_datapoint_keys_for_assignment_in_range(assignment_id, start, end, honeyc
         """
     cursor = ""
     while True:
-        page = honeycomb_client.raw_query(query_pages, {"assignment_id": assignment_id, "start": start, "end": end, "cursor": cursor})
+        vari = {"assignment_id": assignment_id, "start": start, "end": end, "cursor": cursor}
+        # print(json_dumps(vari, True))
+        page = honeycomb_client.raw_query(query_pages, vari)
         page_info = page.get("searchDatapoints").get("page_info")
         data = page.get("searchDatapoints").get("data")
         cursor = page_info.get("cursor")

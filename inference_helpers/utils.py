@@ -25,11 +25,16 @@ def parse_date(date_str):
         raise ValueError("unknown date format")
 
 
+def ts2path(date_str):
+    dte = parse_datetime(date_str[:-5] + "+0000")
+    return dte.strftime("%Y/%m/%d/%H-%M-%S")
+
+
 def parse_datetime(date_str):
     strlen = len(date_str)
     if strlen == 10:
         return datetime.strptime(date_str, DATE_FORMAT)
-    elif strlen == 25:
+    elif strlen == 24:
         return datetime.strptime(date_str, ISO_FORMAT)
     else:
         raise ValueError("unknown date format")

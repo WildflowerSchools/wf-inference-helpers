@@ -6,7 +6,6 @@ WORKDIR /app
 
 RUN apk add ffmpeg
 
-RUN pip install retry click wildflower-honeycomb-sdk boto3 ffmpeg-python
+RUN pip install retry click wildflower-honeycomb-sdk boto3 ffmpeg-python filelock
 
 COPY ./inference_helpers /app/inference_helpers
-
