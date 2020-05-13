@@ -5,6 +5,7 @@ import os
 
 import ffmpeg
 from filelock import Timeout, FileLock
+import numpy as np
 
 from inference_helpers.utils import ts2path
 from inference_helpers.honeycomb import load_file_from_s3, get_assignments, get_datapoint_keys_for_assignment_in_range, get_environment_id, create_inference_execution
@@ -25,8 +26,8 @@ def prepare_range_assignment(environment_id, assignment_id, device_id, start, en
         "device_id": device_id,
         "start": start,
         "end": end,
-        "paths": []
     }
+    paths = []
     os.makedirs(os.path.dirname(state_path), exist_ok=True)
     lock = FileLock(state_path + "-lock", timeout=20)
     try:
@@ -47,16 +48,17 @@ def prepare_range_assignment(environment_id, assignment_id, device_id, start, en
                         load_file_from_s3(key, bucket, output)
                     else:
                         logging.info("file (%s) already exists", output)
-                    manifest['paths'].append({"data_id": data_id, "timestamp": timestamp, "video": output})
-                    write_state(state_path, manifest)
-            write_state(state_path, manifest)
+                    paths.append({"data_id": data_id, "timestamp": timestamp, "video": output})
+            with open(state_path, 'w') as writer:
+                json.dump(manifest, writer)
+                writer.flush()
+            splits = np.array_split(np.array(paths, dtype=dict), 6)
+            for i, split in enumerate(splits, start=1):
+                with open(f"{state_path[:-4]}{i}.json", 'w') as writer:
+                    json.dump(split.tolist(), writer)
+                    writer.flush()
+
     except:
-        logging.error("an error occured")
+        logging.error("an error occured", exc_info=True)
     finally:
         lock.release()
-
-
-def write_state(path, state):
-    with open(path, 'w') as writer:
-        json.dump(state, writer)
-        writer.flush()
